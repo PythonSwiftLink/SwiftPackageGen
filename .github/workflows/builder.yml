@@ -14,9 +14,6 @@ on:
 jobs:
   mainjob1:
     runs-on: macos-13
-    strategy:
-      matrix:
-        swift: ["5.9"]
     outputs:
       sha: ${{ steps.shasum.outputs.var }}
       version: ${{ steps.version.outputs.var }}
