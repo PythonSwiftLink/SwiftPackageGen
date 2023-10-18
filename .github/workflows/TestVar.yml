@@ -9,6 +9,7 @@ env:
 jobs:
   greeting_job:
     runs-on: ubuntu-latest
+    environment: versions
     env:
       Greeting: Hello
     steps:
@@ -17,7 +18,7 @@ jobs:
           echo ${{ vars.TESTINPUT }}
           echo ${{ env }}
           echo ${{ env.versions }}
-          echo ${{ env.versions.TEST2 }}
+          echo ${{ vars.TEST2 }}
           echo ${{ env.TEST2 }}
         env:
           First_Name: Mona
