@@ -51,7 +51,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/codebuilder/Downloads/KivyCoreBuilder/package_templates/KivyPythonCore.yml"
+            argument = "/Users/codebuilder/Downloads/PythonCore.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -63,7 +63,7 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--output /Users/codebuilder/Downloads/kivy-output-3/Package.swift"
+            argument = "--output /Users/codebuilder/Downloads/PythonCorePackage.swift"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

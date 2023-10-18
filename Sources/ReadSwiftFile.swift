@@ -115,7 +115,8 @@ class ReadSwiftFile: CustomStringConvertible {
 			if let file = file {
 				return try file.read()
 			}
-			return packageSample(repo: spec.repository)
+			
+			return packageSample(repo: spec.repository, macOS: spec.macOS)
 		}
 		let parse = Parser.parse(source: try code() )
 		output = parse.statements.map({$0})

@@ -12,6 +12,7 @@ struct PackageSpec: Decodable {
 	
 	let owner: String
 	let repository: String
+	let macOS: Bool
 	let products: [Product]
 	let dependencies: [PackageSpecDependency]?
 	let targets: [PackageTarget]
@@ -22,6 +23,7 @@ struct PackageSpec: Decodable {
 		case products
 		case dependencies
 		case targets
+		case macOS
 	}
 	init(from decoder: Decoder) throws {
 		let c = try! decoder.container(keyedBy: CodingKeys.self)
@@ -30,6 +32,7 @@ struct PackageSpec: Decodable {
 		repository = try c.decode(String.self, forKey: .repository)
 		dependencies = try c.decodeIfPresent([SwiftPackage].self, forKey: .dependencies)
 		targets = try c.decode([PackageTarget].self, forKey: .targets)
+		macOS = try c.decodeIfPresent(Bool.self, forKey: .macOS) ?? false
 	}
 	
 }
@@ -37,6 +40,48 @@ struct PackageSpec: Decodable {
 
 public protocol PackageSpecDependency: Decodable {
 	
+}
+
+extension PackageSpec {
+	enum Platform: Decodable {
+		case iOS(version: String)
+		case macOS(version: String)
+		
+		enum CodingKeys: CodingKey {
+			case iOS
+			case macOS
+		}
+		enum IOSCodingKeys: CodingKey {
+			case _0
+		}
+		enum MacOSCodingKeys: CodingKey {
+			case _0
+		}
+		
+		init(from decoder: Decoder) throws {
+			let container = try decoder.container(keyedBy: PackageSpec.Platform.CodingKeys.self)
+			
+			var allKeys = ArraySlice(container.allKeys)
+			
+			guard let onlyKey = allKeys.popFirst(), allKeys.isEmpty else {
+				throw DecodingError.typeMismatch(PackageSpec.Platform.self, DecodingError.Context.init(codingPath: container.codingPath, debugDescription: "Invalid number of keys found, expected one.", underlyingError: nil))
+			}
+			switch onlyKey {
+			case .iOS:
+				
+				let nestedContainer = try container.nestedContainer(keyedBy: PackageSpec.Platform.IOSCodingKeys.self, forKey: PackageSpec.Platform.CodingKeys.iOS)
+				
+				self = PackageSpec.Platform.iOS(version: try nestedContainer.decode(String.self, forKey: PackageSpec.Platform.IOSCodingKeys._0))
+			case .macOS:
+				
+				let nestedContainer = try container.nestedContainer(keyedBy: PackageSpec.Platform.MacOSCodingKeys.self, forKey: PackageSpec.Platform.CodingKeys.macOS)
+				
+				self = PackageSpec.Platform.macOS(version: try nestedContainer.decode(String.self, forKey: PackageSpec.Platform.MacOSCodingKeys._0))
+			}
+		}
+		
+		
+	}
 }
 
 extension PackageSpec {
@@ -210,7 +255,9 @@ extension PackageSpec {
 			case linkerSettings
 		}
 		init(from decoder: Decoder) throws {
+			
 			let c = try decoder.container(keyedBy: CodingKeys.self)
+			print(c.codingPath,c.allKeys)
 			name = try c.decode(String.self, forKey: .target)
 			dependencies = try c.decode([PackageSpecDependency].self, forKey: .dependencies)
 			resources = try c.decodeIfPresent([String].self, forKey: .resources)
