@@ -27,7 +27,7 @@ extension PackageBinaryTarget {
 		.binaryTarget(name: "\(filename)", url: "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(file)", checksum: "\(sha)")
 		""")
 		
-		return .init(expression: call).withLeadingTrivia(.newline + .tab)
+		return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
 	}
 	
 }
