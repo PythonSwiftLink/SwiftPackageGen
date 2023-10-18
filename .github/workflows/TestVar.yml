@@ -13,6 +13,6 @@ jobs:
       Greeting: Hello
     steps:
       - name: "Say Hello Mona it's Monday"
-        run: echo "$vars.TESTINPUT"
+        run: echo "{{ $vars.TESTINPUT }}"
         env:
           First_Name: Mona
