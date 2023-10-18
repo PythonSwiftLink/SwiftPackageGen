@@ -13,10 +13,12 @@ jobs:
       Greeting: Hello
     steps:
       - name: echo vars.TESTINPUT
-        run: echo ${{ vars.TESTINPUT }}
+        run: |
+          echo ${{ vars.TESTINPUT }}
+          echo ${{ env.TEST2 }}
         env:
           First_Name: Mona
       - name: Set TESTINPUT
         id: shasum
         run: |
-          echo "TEST2=0.0.1" >> $vars
+          echo "TEST2=0.0.1" >> $env
