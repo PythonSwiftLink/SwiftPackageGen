@@ -25,4 +25,5 @@ jobs:
       - name: Set TESTINPUT
         id: shasum
         run: |
-          echo "TEST2=0.0.1" >> $vars
+          echo "TEST2=0.0.1" >> $GITHUB_ENV
+          echo "TEST2=0.0.1" >> $GITHUB_VARS
