@@ -15,6 +15,9 @@ jobs:
       - name: echo vars.TESTINPUT
         run: |
           echo ${{ vars.TESTINPUT }}
+          echo ${{ env }}
+          echo ${{ env.versions }}
+          echo ${{ env.versions.TEST2 }}
           echo ${{ env.TEST2 }}
         env:
           First_Name: Mona
