@@ -12,7 +12,11 @@ jobs:
     env:
       Greeting: Hello
     steps:
-      - name: "Say Hello Mona it's Monday"
-        run: echo "{{ $vars.TESTINPUT }}"
+      - name: echo vars.TESTINPUT
+        run: echo {{ $vars.TESTINPUT }}
         env:
           First_Name: Mona
+      - name: Set TESTINPUT
+        id: shasum
+        run: |
+          echo "TESTINPUT=0.0.1" >> $vars
