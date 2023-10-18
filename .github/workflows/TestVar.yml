@@ -25,4 +25,4 @@ jobs:
       - name: Set TESTINPUT
         id: shasum
         run: |
-          echo "TEST2=0.0.1" >> $env
+          echo "TEST2=0.0.1" >> $vars
