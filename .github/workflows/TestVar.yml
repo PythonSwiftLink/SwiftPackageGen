@@ -1,0 +1,30 @@
+name: Greeting on variable day
+
+on:
+  workflow_dispatch
+
+env:
+  DAY_OF_WEEK: Monday
+
+jobs:
+  greeting_job:
+    runs-on: ubuntu-latest
+    environment: versions
+    env:
+      Greeting: Hello
+    steps:
+      - uses: actions/checkout@v4
+      - name: echo vars.TESTINPUT
+        run: |
+          echo ${{ vars.TESTINPUT }}
+          echo ${{ env.First_Name }}
+          echo ${{ env.versions }}
+          echo ${{ vars.TEST2 }}
+          echo ${{ env.TEST2 }}
+        env:
+          First_Name: Mona
+      - name: Set TESTINPUT
+        id: shasum
+        run: |
+          echo "TEST2=0.0.1" >> $GITHUB_ENV
+          echo ${{ vars.TEST2 }}

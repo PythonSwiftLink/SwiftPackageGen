@@ -64,8 +64,8 @@ formula_lastest = template0.format(version=version, version_name="", sha=sha)
 
 formula_version = template0.format(version=version, version_name=f'AT{version.replace(".","")}', sha=sha)
 
-with open("homebrew_formula/SwiftPackageGen.rb", "w") as f:
+with open("homebrew_formula/swiftpackagegen.rb", "w") as f:
     f.write(formula_lastest)
 
-with open(f"homebrew_formula/SwiftPackageGen@{version}.rb", "w") as f:
+with open(f"homebrew_formula/swiftpackagegen@{version}.rb", "w") as f:
     f.write(formula_version)
