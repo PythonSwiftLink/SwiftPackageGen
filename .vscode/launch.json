@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "name": "Debug SwiftPackageGen",
+            "program": "${workspaceFolder:SwiftPackageGen}/.build/debug/SwiftPackageGen",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftPackageGen}",
+            "preLaunchTask": "swift: Build Debug SwiftPackageGen"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "name": "Release SwiftPackageGen",
+            "program": "${workspaceFolder:SwiftPackageGen}/.build/release/SwiftPackageGen",
+            "args": [],
+            "cwd": "${workspaceFolder:SwiftPackageGen}",
+            "preLaunchTask": "swift: Build Release SwiftPackageGen"
+        }
+    ]
+}
