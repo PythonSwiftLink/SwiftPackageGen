@@ -27,4 +27,4 @@ jobs:
         id: shasum
         run: |
           echo "TEST2=0.0.1" >> $GITHUB_ENV
-          echo "TEST2=0.0.1" >> $GITHUB_VARS
+          echo ${{ vars.TEST2 }}
