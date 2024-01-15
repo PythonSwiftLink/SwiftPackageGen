@@ -18,7 +18,7 @@ let package = Package(
 		.package(url: "https://github.com/kylef/PathKit", .upToNextMajor(from: "1.0.1")),
 		.package(url: "https://github.com/jpsim/Yams.git", .upToNextMajor(from: "5.0.6")),
 		.package(url: "https://github.com/YusukeHosonuma/SwiftPrettyPrint.git", from: .init(1, 4, 0)),
-		.package(url: "https://github.com/kayembi/Tarscape.git", branch: "main")
+		//.package(url: "https://github.com/kayembi/Tarscape.git", branch: "main")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -41,7 +41,7 @@ let package = Package(
 			dependencies: [
 				.product(name: "ArgumentParser", package: "swift-argument-parser"),
 				.product(name: "PathKit", package: "PathKit"),
-				.product(name: "Tarscape", package: "tarscape"),
+				//.product(name: "Tarscape", package: "tarscape"),
 				"GeneratePackage"
 			]
 		),
