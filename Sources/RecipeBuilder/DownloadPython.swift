@@ -69,6 +69,6 @@ func downloadKivyIOS(version: String) async throws -> Path {
 	return tmp
 }
 
-func unTarDownload(path: Path, output: Path) throws {
-	try FileManager.default.extractTar(at: path.url, to: output.url)
-}
+//func unTarDownload(path: Path, output: Path) throws {
+//	try FileManager.default.extractTar(at: path.url, to: output.url)
+//}
