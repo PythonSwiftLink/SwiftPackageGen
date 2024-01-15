@@ -8,14 +8,14 @@ import PathKit
 
 
 
-struct PackageSpec: Decodable {
+public struct PackageSpec: Decodable {
 	
 	let owner: String
 	let repository: String
 	let macOS: Bool
 	let products: [Product]
 	let dependencies: [PackageSpecDependency]?
-	let targets: [PackageTarget]
+	public let targets: [PackageTarget]
 	
 	enum CodingKeys: CodingKey {
 		case owner
@@ -25,7 +25,7 @@ struct PackageSpec: Decodable {
 		case targets
 		case macOS
 	}
-	init(from decoder: Decoder) throws {
+	public init(from decoder: Decoder) throws {
 		let c = try! decoder.container(keyedBy: CodingKeys.self)
 		owner = try c.decode(String.self, forKey: .owner)
 		products = try c.decode([Product].self, forKey: .products)
@@ -126,7 +126,7 @@ extension PackageSpec {
 		
 	}
 	
-	enum LinkerSetting: Decodable {
+	public enum LinkerSetting: Decodable {
 		case framework(value: String)
 		case library(value: String)
 		
@@ -135,7 +135,7 @@ extension PackageSpec {
 			case library
 		}
 		
-		init(from decoder: Decoder) throws {
+		public init(from decoder: Decoder) throws {
 			let container: KeyedDecodingContainer<LinkerSetting.CodingKeys> = try decoder.container(keyedBy: LinkerSetting.CodingKeys.self)
 			
 			if container.contains(.framework) {
@@ -149,11 +149,13 @@ extension PackageSpec {
 		}
 	}
 	
-	struct BinaryTarget: PackageSpecDependency {
+	public struct BinaryTarget: PackageSpecDependency {
 		
-		let path: Path
+		public let path: Path
+		public var localUsage: Bool
 		
-		var binaryTargets: [PackageBinaryTarget] {
+		public var binaryTargets: [PackageBinaryTarget] {
+			if path.extension == "xcframework" { return [.init(path: path)] }
 			if path.isDirectory {
 				return path.createBinaryTargets()
 			}
@@ -161,12 +163,14 @@ extension PackageSpec {
 		}
 		enum CodingKeys: CodingKey {
 			case binary
+			case local
 		}
 		
-		init(from decoder: Decoder) throws {
+		public init(from decoder: Decoder) throws {
 			let c = try decoder.container(keyedBy: CodingKeys.self)
 			//path = try decoder.singleValueContainer().decode(Path.self)
 			path = try c.decode(Path.self, forKey: .binary)
+			localUsage = (try c.decodeIfPresent(Bool.self, forKey: .local)) ?? false
 		}
 	}
 	
@@ -242,19 +246,21 @@ extension PackageSpec {
 
 	}
 	
-	struct PackageTarget: Decodable {
+	public struct PackageTarget: Decodable {
 		var name: String
-		var dependencies: [PackageSpecDependency]
+		public var dependencies: [PackageSpecDependency]
 		var resources: [String]?
-		var linkerSettings: [LinkerSetting]?
+		public var linkerSettings: [LinkerSetting]?
+		public var custom_recipe: Bool
 		
 		enum CodingKeys: CodingKey {
 			case target
 			case dependencies
 			case resources
 			case linkerSettings
+			case custom_recipe
 		}
-		init(from decoder: Decoder) throws {
+		public init(from decoder: Decoder) throws {
 			
 			let c = try decoder.container(keyedBy: CodingKeys.self)
 			print(c.codingPath,c.allKeys)
@@ -262,6 +268,8 @@ extension PackageSpec {
 			dependencies = try c.decode([PackageSpecDependency].self, forKey: .dependencies)
 			resources = try c.decodeIfPresent([String].self, forKey: .resources)
 			linkerSettings = try c.decodeIfPresent([LinkerSetting].self, forKey: .linkerSettings)
+			custom_recipe = try c.decodeIfPresent(Bool.self, forKey: .custom_recipe) ?? false
+			
 		}
 		
 	}

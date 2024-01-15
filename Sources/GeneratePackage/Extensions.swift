@@ -29,7 +29,14 @@ extension PackageBinaryTarget {
 		
 		return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
 	}
-	
+	func binaryTarget(name: String, path: String) -> ArrayElementSyntax {
+		let local = Path(path).lastComponent
+		let call = FunctionCallExprSyntax(stringLiteral: """
+		.binaryTarget(name: "\(name)", path: "\(local)")
+		""")
+		
+		return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
+	}
 }
 
 extension PackageSpec.LinkerSetting {

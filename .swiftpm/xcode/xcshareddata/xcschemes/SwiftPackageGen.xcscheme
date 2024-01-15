@@ -34,11 +34,14 @@
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
-      useCustomWorkingDirectory = "NO"
+      useCustomWorkingDirectory = "YES"
+      customWorkingDirectory = "/Volumes/CodeSSD/TestProjects/CythonTests"
       ignoresPersistentStateOnLaunch = "NO"
       debugDocumentVersioning = "YES"
       debugServiceExtension = "internal"
-      allowLocationSimulation = "YES">
+      allowLocationSimulation = "YES"
+      consoleMode = "0"
+      structuredConsoleMode = "2">
       <BuildableProductRunnable
          runnableDebuggingMode = "0">
          <BuildableReference
@@ -52,11 +55,11 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "/Users/codebuilder/Downloads/PythonCore.yml"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "0.0.0"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Users/codebuilder/Downloads/KivyCoreBuilder/package_templates/KivyCore/Package.swift"
@@ -64,6 +67,22 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "--output /Users/codebuilder/Downloads/PythonCorePackage.swift"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "builder CythonizedMainPy"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Volumes/CodeSSD/TestProjects/CythonTests/recipes/CythonizedMainPy.yml"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-p /Volumes/CodeSSD/TestProjects/CythonTests/recipes/CythonizedMainPy"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "-o /Volumes/CodeSSD/TestProjects/CythonTests/packages/"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

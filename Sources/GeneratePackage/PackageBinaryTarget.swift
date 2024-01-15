@@ -34,11 +34,11 @@ extension PathKit.Path {
 	}
 }
 
-struct PackageBinaryTarget {
-	let path: Path
+public struct PackageBinaryTarget {
+	public let path: Path
 	
-	var filename: String { path.lastComponentWithoutExtension }
-	var file: String { path.lastComponent }
+	public var filename: String { path.lastComponentWithoutExtension }
+	public var file: String { path.lastComponent }
 	
 	var sha: String { (try? path.sha256()) ?? "" }
 	

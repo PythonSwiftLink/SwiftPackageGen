@@ -30,8 +30,18 @@ extension PathKit.Path: Decodable {
 extension PathKit.Path {
 	func createBinaryTargets() -> [PackageBinaryTarget] {
 		self
-			.filter({$0.extension == "zip"})
-			.map(PackageBinaryTarget.init)
+			.compactMap { file in
+				switch file.extension {
+				case "zip":
+					return PackageBinaryTarget(path: file)
+				case "xcframework":
+					return PackageBinaryTarget(path: file)
+				default: break
+				}
+				return nil
+			}
+//			.filter({$0.extension == "zip"})
+//			.map(PackageBinaryTarget.init)
 	}
 }
 
@@ -123,8 +133,9 @@ extension GeneratePackage {
 			return false
 		}
 		if filteredTargets.isEmpty {
-			filteredTargets.append(contentsOf: spec.targets.map { specTarget in
-				.init(expression: FunctionCallExpr(stringLiteral:
+			filteredTargets.append(contentsOf: spec.targets.compactMap { specTarget in
+				if specTarget.custom_recipe { return nil }
+				return .init(expression: FunctionCallExpr(stringLiteral:
 				"""
 				.target(
 					name: "\(specTarget.name)",
@@ -146,15 +157,30 @@ extension GeneratePackage {
 			if let t = syntaxTarget.targetSpec {
 				let binaryDeps = t.dependencies.compactMap { $0 as? PackageSpec.BinaryTarget}
 				for dependency in binaryDeps {
-					output_binaryTargets.append(contentsOf: dependency.binaryTargets.map { binaryTarget in
-						binaryTarget.binaryTarget(owner: spec.owner, repo: spec.repository, version: version)
-					})
+					
 					
 				}
 			}
 
 			_target.expression = .init(syntaxTarget.src)
 			output_targets.append(_target)
+		}
+		for target in spec.targets {
+			for dependency in target.dependencies.compactMap({$0 as? PackageSpec.BinaryTarget}) {
+				output_binaryTargets.append(contentsOf: dependency.binaryTargets.map { binaryTarget in
+					if dependency.localUsage {
+						
+						if Path(binaryTarget.file).exists {
+							binaryTarget.binaryTarget(name: binaryTarget.filename, path: binaryTarget.file )
+						} else {
+							binaryTarget.binaryTarget(name: binaryTarget.filename, path: (Path.current + binaryTarget.file).string )
+						}
+						
+					} else {
+						binaryTarget.binaryTarget(owner: spec.owner, repo: spec.repository, version: version)
+					}
+				})
+			}
 		}
 		
 		for binary in filteredBinaryTargets {
@@ -291,13 +317,13 @@ extension GeneratePackage {
 }
 
 
-class GeneratePackage {
+public class GeneratePackage {
 	
-	var spec: PackageSpec
-	var swiftFile: ReadSwiftFile
+	public var spec: PackageSpec
+	public var swiftFile: ReadSwiftFile
 	var version: String
 	
-	init(fromSwiftFile file: Path?, spec: Path, version: String) async throws {
+	public init(fromSwiftFile file: Path?, spec: Path, version: String) async throws {
 		self.spec = try YAMLDecoder().decode( PackageSpec.self, from: spec.read() )
 		self.version = version
 		swiftFile = try .init(file: file, spec: self.spec)

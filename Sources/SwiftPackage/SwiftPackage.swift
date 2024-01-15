@@ -8,7 +8,7 @@
 import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
-
+import GeneratePackage
 
 class TargetClass {
 	

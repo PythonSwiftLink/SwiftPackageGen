@@ -104,12 +104,12 @@ fileprivate func readVariableDecl(syntax: inout VariableDecl) async throws {
 }
 
 
-class ReadSwiftFile: CustomStringConvertible {
+public class ReadSwiftFile: CustomStringConvertible {
 	
 	let file: Path?
 	var output: [CodeBlockItemSyntax] = []
 	
-	init(file: Path?, spec: PackageSpec) throws {
+	public init(file: Path?, spec: PackageSpec) throws {
 		self.file = file
 		func code() throws -> String {
 			if let file = file {
