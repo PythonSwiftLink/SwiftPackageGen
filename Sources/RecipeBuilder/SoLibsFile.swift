@@ -20,14 +20,17 @@ public struct SoLibsFile {
 		let content = try file.read(.utf8)
 		let args = content.split(separator: "-L").map(String.init)
 		switch args.count {
+		case 4...:
+			optionals = args[2...].joined(separator: " ")
+			xcodePath = .init(args[1])
 		case 3:
 			optionals = args[2]
-			fallthrough
+			xcodePath = .init(args[1])
 		case 2:
 			xcodePath = .init(args[1])
 			
 		
-		default: fatalError()
+		default: break//fatalError("\(args.count) - \(file)")
 		}
 	}
 	
