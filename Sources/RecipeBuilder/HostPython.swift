@@ -9,29 +9,29 @@ import Foundation
 
 import PathKit
 
-extension URL {
+public extension URL {
 	static let ZSH = URL(filePath: "/bin/zsh")
 	static let hostPython = (Path.hostPython + "python3/bin/python3").url
 	static let venvPython = Path.venvActivate.url
 }
 
-extension Path {
+public extension Path {
 	static let hostPython = Path.current + "hostpython"
 	static let venv = Path.hostPython + "venv"
 	static let venvActivate = (Path.venv + "bin/activate")
 }
 
 @discardableResult
-func buildHostPython(version: String = "3.11.6") async throws -> Int32 {
-	let current = Path.current
-	let openssl_path = Path.hostPython + "openssl"
+public func buildHostPython(version: String = "3.11.6", path: Path = .hostPython) async throws -> Int32 {
+	//let current = Path.current
+	let openssl_path = path + "openssl"
 	let tar = try await downloadPython(version: version)
 	let openssl_tar = try await downloadOpenSSL(version: "1.1.1l")
 	try await InstallOpenSSL(url: openssl_tar, prefix: openssl_path)
 	
 	let tmp = tar.parent()
 	//let name = tar.lastComponentWithoutExtension
-	let python_folder = Path.hostPython + "python3"
+	let python_folder = path + "python3"
 	//let python_folder = SYSTEM_FILES.appendingPathComponent(target_folder.rawValue).path
 	let file = "Python-\(version)"
 	let task = Process()
