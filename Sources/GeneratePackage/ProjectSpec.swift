@@ -235,8 +235,9 @@ extension PackageSpec {
 	struct PackageProduct: PackageSpecDependency {
 		
 		//let name: String
-		let package: String
-		let product: String?
+		let product: String
+		let package: String?
+		
 //		var binaryTargets: [PackageBinaryTarget] {
 //			if path.isDirectory {
 //				return path.createBinaryTargets()

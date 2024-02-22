@@ -54,36 +54,40 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "/Users/codebuilder/Downloads/PythonCore.yml"
-            isEnabled = "NO">
+            argument = "generate"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Volumes/CodeSSD/GitHub/CoreBuilder/package_templates/KivyPythonCore.yml"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "0.0.0"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Users/codebuilder/Downloads/KivyCoreBuilder/package_templates/KivyCore/Package.swift"
-            isEnabled = "NO">
+            argument = "--output /Volumes/CodeSSD/PSL-development/package_swifts/PythonCorePackage.swift"
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--output /Users/codebuilder/Downloads/PythonCorePackage.swift"
+            argument = "/Volumes/CodeSSD/PSL-development/package_swifts/KivyPythonCore.swift"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "builder CythonizedMainPy"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Volumes/CodeSSD/TestProjects/CythonTests/recipes/CythonizedMainPy.yml"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-p /Volumes/CodeSSD/TestProjects/CythonTests/recipes/CythonizedMainPy"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "-o /Volumes/CodeSSD/TestProjects/CythonTests/packages/"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
    </LaunchAction>

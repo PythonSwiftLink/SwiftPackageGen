@@ -62,11 +62,16 @@ extension PackageSpecDependency {
 		case let product as PackageSpec.PackageProduct:
 			
 			let call: FunctionCallExpr
-			if let _product = product.product {
-				call = ".product(name: \"\(raw: _product)\", package: \"\(raw: product.package)\")"
+			if let package = product.package {
+				call = ".product(name: \"\(raw: product.product)\", package: \"\(raw: package)\")"
 			} else {
-				call = ".product(name: \"\(raw: product.package)\")"
+				call = ".product(name: \"\(raw: product.product)\")"
 			}
+//			if let _product = product.product {
+//				call = ".product(name: \"\(raw: _product)\", package: \"\(raw: product.package)\")"
+//			} else {
+//				call = ".product(name: \"\(raw: product.package)\")"
+//			}
 			return [.init(expression: call).withLeadingTrivia(.newline + .tabs(2)).withTrailingComma(.comma)]
 		default: fatalError()
 			//		case .framework(let value):
