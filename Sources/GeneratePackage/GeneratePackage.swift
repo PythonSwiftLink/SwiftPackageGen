@@ -246,12 +246,13 @@ extension GeneratePackage {
 		for product in spec.products {
 			switch product {
 			case .library(let name, let targets):
+				
 				products.elements = products.elements.appending(.init(
 					expression: FunctionCallExpr(stringLiteral: """
 					.library(
 						name: "\(name)",
 						targets: [
-							\(targets.map({"\"\($0)\""}).joined(separator: ",\n\t"))
+							\(targets.map({"\"\($0)\""}).joined(separator: ",\n"))
 						]
 					)
 					"""
@@ -268,8 +269,9 @@ extension GeneratePackage {
 					return arg
 				case .products:
 					if var products = arg.expression.as(ArrayExpr.self) {
-						try await handleProducts(&products)
-						
+						if products.elements.count == 0 {
+							try await handleProducts(&products)
+						}
 						return arg.withExpression(.init(products.withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))))
 					}
 					
