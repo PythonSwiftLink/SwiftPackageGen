@@ -54,6 +54,10 @@ extension PackageSpecDependency {
 	
 	func arrayElement() -> [ArrayElement] {
 		switch self {
+		case let target as PackageSpec.Target:
+			return [
+				.init(expression: Expr(stringLiteral: "\"\(target.target)\"").withLeadingTrivia(.newline + .tabs(2)))
+			]
 		case let bin as PackageSpec.BinaryTarget:
 			return .init(bin.binaryTargets.map { .init(
 				expression: StringLiteralExpr(stringLiteral: "\"\($0.filename)\"").withLeadingTrivia(.newline + .tabs(2))

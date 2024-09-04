@@ -82,6 +82,7 @@ fileprivate enum DependencyCodingKeys: String, CodingKey {
 	case binary
 	////case package
 	case product
+	case target
 }
 
 extension KeyedDecodingContainer {
@@ -97,6 +98,8 @@ extension KeyedDecodingContainer {
 			
 			print(c.currentIndex)
 			switch switchKey {
+			case let trg where trg.contains(.target):
+				output.append(try pc.decode(PackageSpec.Target.self))
 			case let bin where bin.contains(.binary):
 				//output.append(try nested.decode(PackageSpec.BinaryTarget.self, forKey: .binary))
 				output.append(try pc.decode(PackageSpec.BinaryTarget.self))

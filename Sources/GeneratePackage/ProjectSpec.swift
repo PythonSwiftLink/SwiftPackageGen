@@ -174,6 +174,22 @@ extension PackageSpec {
 		}
 	}
 	
+	public struct Target: PackageSpecDependency {
+		
+		public let target: String
+		
+		
+		enum CodingKeys: CodingKey {
+			case target
+		}
+		
+		public init(from decoder: Decoder) throws {
+			let c = try decoder.container(keyedBy: CodingKeys.self)
+			//path = try decoder.singleValueContainer().decode(Path.self)
+			target = try c.decode(String.self, forKey: .target)
+		}
+	}
+	
 	struct SwiftPackage: PackageSpecDependency {
 		
 		enum Version: Decodable {
