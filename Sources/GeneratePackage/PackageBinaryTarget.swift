@@ -21,6 +21,7 @@ extension PathKit.Path {
 			return true
 		}) { }
 		let digest = hasher.finalize()
+		print(url.path(), digest.description)
 		return digest
 		
 		// Here's how to convert to string form
