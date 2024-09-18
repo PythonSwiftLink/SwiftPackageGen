@@ -56,7 +56,7 @@ extension PackageSpecDependency {
 		switch self {
 		case let target as PackageSpec.Target:
 			return [
-				.init(expression: Expr(stringLiteral: "\"\(target.target)\"").withLeadingTrivia(.newline + .tabs(2)))
+				.init(expression: Expr(stringLiteral: "\"\(target.target)\"").withLeadingTrivia(.newline + .tabs(2))).withTrailingComma(.comma)
 			]
 		case let bin as PackageSpec.BinaryTarget:
 			return .init(bin.binaryTargets.map { .init(

@@ -58,7 +58,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "/Volumes/CodeSSD/GitHub/CoreBuilder/package_templates/KivyPythonCore.yml"
+            argument = "/Volumes/CodeSSD/GitHub/CoreBuilder/package_templates/kivyextra.yml"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -66,7 +66,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--output /Volumes/CodeSSD/PSL-development/package_swifts/PythonCorePackage.swift"
+            argument = "--output /Volumes/CodeSSD/PSL-development/package_swifts/KivyExtraPackage.swift"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument

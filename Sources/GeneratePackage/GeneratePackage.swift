@@ -181,6 +181,7 @@ extension GeneratePackage {
 					}
 				})
 			}
+			
 		}
 		
 		for binary in filteredBinaryTargets {

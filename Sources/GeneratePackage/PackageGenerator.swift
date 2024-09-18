@@ -103,10 +103,10 @@ public class PackageGenerator: CustomStringConvertible {
 	}
 	
 	func handleVariableDecl(syntax: inout VariableDecl) async throws {
-		print("handleVariableDecl(syntax: VariableDecl):")
+		//print("handleVariableDecl(syntax: VariableDecl):")
 		if var binding = syntax.bindings.first {
 			let pattern = binding.pattern
-			print("\t\(pattern.kind) - \(pattern)")
+			//print("\t\(pattern.kind) - \(pattern)")
 			if let identifierPattern = pattern.as(IdentifierPattern.self) {
 				let identifier = identifierPattern.identifier.text
 				switch identifier {
@@ -127,11 +127,11 @@ public class PackageGenerator: CustomStringConvertible {
 	
 	
 	func handlePackageFunctionCall(syntax: inout FunctionCallExpr) async throws {
-		print("\t\(syntax.calledExpression.kind)")
+		//print("\t\(syntax.calledExpression.kind)")
 		var args = [TupleExprElement]()
 		for (i,arg) in syntax.argumentList.enumerated() {
 			if let arg_name = arg.label?.text, let arg_case = PackageArgs(rawValue: arg_name) {
-				print("\t\t\(arg_name) - \(arg.expression.kind)")
+				//print("\t\t\(arg_name) - \(arg.expression.kind)")
 				switch arg_case {
 				case .name:
 					args.append(arg)
@@ -155,30 +155,30 @@ public class PackageGenerator: CustomStringConvertible {
 		syntax.argumentList = .init(args)
 	}
 	func handlePackageDependencies(_ dependencies: inout ArrayExpr) async throws {
-		print("\t\thandlePackageDependencies(_ dependencies: inout ArrayExpr):")
+		//print("\t\thandlePackageDependencies(_ dependencies: inout ArrayExpr):")
 		infoPrint("elements", dependencies.elements.map(\.expression.kind), indent: 3)
 		
 		
 		dependencies.rightSquare = .rightSquareBracket.withLeadingTrivia(.newline)
 	}
 	func handlePackageTargets(_ targets: inout ArrayExpr) async throws {
-		infoPrint("handlePackageTargets(_ targets: inout ArrayExpr)", indent: 2)
+		//infoPrint("handlePackageTargets(_ targets: inout ArrayExpr)", indent: 2)
 		var output_targets: [ArrayElementSyntax] = []
 		var output_binaryTargets: [ArrayElementSyntax] = []
 		
 		for _target in targets.elements {
-			infoPrint("_target", _target.expression.kind, indent: 3)
-			infoPrint("_target.expression", _target.expression.kind, indent: 4)
+			//infoPrint("_target", _target.expression.kind, indent: 3)
+			//infoPrint("_target.expression", _target.expression.kind, indent: 4)
 			if var target = _target.expression.as(FunctionCallExpr.self) {
 				infoPrint("target.calledExpression.kind", target.calledExpression.kind, indent: 4)
 				if var memberAccessExpr = target.calledExpression.as(MemberAccessExpr.self) {
 					if let target_type = TargetType(rawValue: memberAccessExpr.name.text) {
-						infoPrint("target type", target_type, indent: 4)
+						//infoPrint("target type", target_type, indent: 4)
 						switch target_type {
 						case .target:
 							output_targets.append(_target)
 						case .binaryTarget:
-							infoPrint("target.argumentList", target.argumentList.map(\.description), indent: 5)
+							//infoPrint("target.argumentList", target.argumentList.map(\.description), indent: 5)
 							for _target_arg in target.argumentList {
 								let arg_exp = _target_arg.expression
 								infoPrint(_target_arg.label?.text ?? "_", arg_exp, indent: 6)

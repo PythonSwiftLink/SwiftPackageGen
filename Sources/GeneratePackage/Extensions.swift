@@ -83,6 +83,7 @@ fileprivate enum DependencyCodingKeys: String, CodingKey {
 	////case package
 	case product
 	case target
+	//case name
 }
 
 extension KeyedDecodingContainer {
@@ -112,6 +113,7 @@ extension KeyedDecodingContainer {
 				//output.append(try nested.decode(PackageSpec.PackageProduct.self, forKey: .product))
 				
 				output.append(try pc.decode(PackageSpec.PackageProduct.self))
+			//case let string where string.contains(.binary)
 			default: throw DecodingError.keyNotFound(key, .init(codingPath: [], debugDescription: "wrong key"))
 			}
 		}

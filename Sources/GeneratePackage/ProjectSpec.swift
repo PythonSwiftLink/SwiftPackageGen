@@ -145,7 +145,7 @@ extension PackageSpec {
 				self = .library(value: try container.decode(String.self, forKey: .library))
 				
 			} else { fatalError() }
-			print(self)
+			//print(self)
 		}
 	}
 	
@@ -244,7 +244,7 @@ extension PackageSpec {
 			self.url = try! container.decodeIfPresent(String.self, forKey: SwiftPackage.CodingKeys.url)
 			self.path = try container.decodeIfPresent(String.self, forKey: SwiftPackage.CodingKeys.path)
 			self.version = try! container.decode(SwiftPackage.Version.self, forKey: PackageSpec.SwiftPackage.CodingKeys.version)
-			print(url, version)
+			//print(url, version)
 		}
 	}
 	
