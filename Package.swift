@@ -49,6 +49,7 @@ let package = Package(
 			.product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
 			.product(name: "SwiftSyntax", package: "swift-syntax"),
 			.product(name: "PathKit", package: "PathKit"),
-		])
+		]),
+		
     ]
 )

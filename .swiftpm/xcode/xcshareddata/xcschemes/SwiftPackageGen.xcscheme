@@ -54,11 +54,24 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
+<<<<<<< Updated upstream
             argument = "generate"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Volumes/CodeSSD/GitHub/CoreBuilder/package_templates/kivyextra.yml"
+            isEnabled = "YES">
+=======
+            argument = "generate /Users/codebuilder/Downloads/PythonCore.yml"
+            isEnabled = "NO">
+>>>>>>> Stashed changes
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "update /Users/codebuilder/output/python3/Package.swift"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "/Users/codebuilder/output/python3/xcframework"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
@@ -66,8 +79,21 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
+<<<<<<< Updated upstream
             argument = "--output /Volumes/CodeSSD/PSL-development/package_swifts/KivyExtraPackage.swift"
             isEnabled = "YES">
+=======
+            argument = "KivySwiftLink"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "pythoncore"
+            isEnabled = "YES">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--input /Volumes/CodeSSD/PSL-development/PythonCore/Package.swift"
+            isEnabled = "NO">
+>>>>>>> Stashed changes
          </CommandLineArgument>
          <CommandLineArgument
             argument = "/Volumes/CodeSSD/PSL-development/package_swifts/KivyPythonCore.swift"

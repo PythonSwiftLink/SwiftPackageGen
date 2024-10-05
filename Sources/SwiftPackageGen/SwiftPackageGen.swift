@@ -17,7 +17,7 @@ struct SwiftPackageGen: AsyncParsableCommand {
 	
 	static var configuration: CommandConfiguration = .init(
 		version: "0.0.5",
-		subcommands: [Generate.self, Builder.self]
+		subcommands: [Generate.self, Builder.self, Update.self]
 	)
 	struct Generate: AsyncParsableCommand {
 		
@@ -52,6 +52,26 @@ struct SwiftPackageGen: AsyncParsableCommand {
 		
 		func run() async throws {
 			try await RecipeBuilder(recipe: recipe, spec: spec, path: path, output: output).run()
+		}
+	}
+	
+	struct Update: AsyncParsableCommand {
+		@Argument var file: Path
+		@Argument var xcframework: Path
+		@Argument var version: String
+		@Argument var owner: String
+		@Argument var repo: String
+		
+		func run() async throws {
+			try await UpdateBinaryTargets(
+				file: file,
+				xcframeworks: xcframework,
+				version: version,
+				owmer: owner,
+				repo: repo
+			)
+				.description
+				.write(toFile: file.string, atomically: true, encoding: .utf8)
 		}
 	}
 }

@@ -350,6 +350,158 @@ public class GeneratePackage {
 	
 }
 
+extension ReadSwiftFile {
+	
+}
+
+
+public class UpdateBinaryTargets {
+	public var swiftFile: SourceFileSyntax
+	public var xcframeworks: Path
+	public var version: String
+	public var owner: String
+	public var repo: String
+	var modifiedFile: SourceFileSyntax
+	
+	public init(file: Path, xcframeworks: Path, version: String, owmer: String, repo: String) async throws {
+		let _file = Parser.parse(source: try file.read())
+		swiftFile = _file
+		modifiedFile = _file
+		self.version = version
+		self.xcframeworks = xcframeworks
+		self.owner = owmer
+		self.repo = repo
+		let _new: [CodeBlockItem] = try await swiftFile.statements.asyncMap { stmt in
+			let item = stmt.item
+			switch item.kind {
+			case .variableDecl:
+				guard var variDecl = item.as(VariableDecl.self) else { fatalError() }
+				try await modifyPackage(&variDecl)
+				return .init(item: .decl(.init(variDecl)))
+			default:
+				return stmt
+			}
+		}
+		modifiedFile = SourceFile(statements: .init(_new), eofToken: .eof)
+	}
+	
+	func modifyPackage(_ syntax: inout VariableDecl)async throws {
+		if var binding = syntax.bindings.first {
+			let pattern = binding.pattern
+			print("\t\(pattern.kind) - \(pattern)")
+			if let identifierPattern = pattern.as(IdentifierPattern.self) {
+				let identifier = identifierPattern.identifier.text
+				switch identifier {
+				case "package":
+					if var packageValue = binding.initializer?.value.as(FunctionCallExpr.self) {
+						try await readPackageFunctionCall(syntax: &packageValue)
+						binding.initializer?.value = .init(packageValue)
+					}
+					//fatalError()
+				default: fatalError(identifier)
+				}
+				//print("\t\(binding.initializer?.value.kind.nameForDiagnostics ?? "no initializer.value")")
+				//print("\t\()")
+			}
+			syntax.bindings = .init([binding])
+		}
+	}
+	
+	fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExpr) async throws {
+		let args: [TupleExprElement] = try await syntax.argumentList.asyncMap { arg in
+			if let arg_name = arg.label?.text, let arg_case = PackageArgNames(rawValue: arg_name) {
+				switch arg_case {
+				
+				case .targets:
+					if var targets = arg.expression.as(ArrayExpr.self) {
+						//try await handlePackageTargets(&targets)
+						try await targets.updateTargets(
+							binaries: xcframeworks,
+							version: version,
+							owner: owner,
+							repo: repo
+						)
+						return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
+					}
+				default: return arg
+				}
+			
+			}
+			return arg
+		}
+		syntax.argumentList = .init(args)
+	}
+	
+	public var description: String {
+		var code = ""
+		modifiedFile.formatted().write(to: &code)
+		return code
+	}
+}
+
+extension ArrayExpr {
+	mutating func updateTargets(binaries: Path, version: String, owner: String, repo: String) async throws {
+		
+		elements = .init(try await elements.asyncMap {
+			element in
+			guard
+				var target = element.expression.as(FunctionCallExpr.self),
+				TargetType(target: target) == .binaryTarget
+			else { return element }
+			try await target.updateBinaryTarget(
+				binaries: binaries,
+				version: version,
+				owner: owner,
+				repo: repo
+			)
+			
+			return element.withExpression(.init(target))
+		})
+	}
+}
+
+extension FunctionCallExpr {
+	mutating func updateBinaryTarget(binaries: Path, version: String, owner: String, repo: String) async throws {
+		print(self.calledExpression.description)
+		guard let name = argumentList.first?.expression.as(StringLiteralExpr.self)?.segments.first?.description else { fatalError() }
+		let binaryFiles = try binaries.children()
+		print(name, binaryFiles.map(\.lastComponentWithoutExtension).contains(name))
+		guard let binary = binaryFiles.first(where: {$0.lastComponentWithoutExtension == name}) else { fatalError() }
+		argumentList = .init(
+			try argumentList.map({
+				arg in
+				switch arg.label?.description {
+				case "url":
+					return arg.withExpression(
+						.init(StringLiteralExprSyntax(content:  "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(binary.lastComponent)"))
+					)
+				case "checksum":
+					return arg.withExpression(
+						.init("\(literal: try binary.sha256())")
+					)
+				default: return arg
+				}
+				
+			})
+		)
+	}
+}
+
+extension UpdateBinaryTargets {
+	enum PackageArgNames: String {
+		case name
+		case products
+		case dependencies
+		case targets
+		//case linkedSettings
+	}
+	
+	enum TargetArgNames: String {
+		case name
+		case dependencies
+		case linkerSettings
+	}
+}
 
 
 
