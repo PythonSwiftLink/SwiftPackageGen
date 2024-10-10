@@ -4,6 +4,7 @@ import SwiftParser
 import SwiftSyntaxBuilder
 import PathKit
 import Yams
+import SwiftPackage
 
 func packageSample(repo: String, macOS: Bool) -> String {
 """
@@ -47,10 +48,10 @@ extension PathKit.Path {
 
 extension GeneratePackage {
 	class SyntaxDependencies {
-		var src: TupleExprElement
+		var src: TupleExprElementSyntax
 		
 		
-		init(name: String, src: TupleExprElement, spec: PackageSpec, version: String, dependencies: [PackageSpecDependency]) {
+		init(name: String, src: TupleExprElementSyntax, spec: PackageSpec, version: String, dependencies: [PackageSpecDependency]) {
 			self.src = src
 			
 		}
@@ -60,7 +61,7 @@ extension GeneratePackage {
 		var name: String? { src.getTargetName() }
 		var spec: PackageSpec
 		var targetSpec: PackageSpec.PackageTarget? { spec.targets.first(where: {$0.name == name }) }
-		var src: FunctionCallExpr
+		var src: FunctionCallExprSyntax
 		
 		var version: String
 		var dependencies: SyntaxDependencies? {
@@ -71,7 +72,7 @@ extension GeneratePackage {
 			
 			return nil
 		}
-		init(name: String, spec: PackageSpec, src: FunctionCallExpr, version: String) {
+		init(name: String, spec: PackageSpec, src: FunctionCallExprSyntax, version: String) {
 			//self.name = name
 			self.spec = spec
 			self.src = src
@@ -85,7 +86,7 @@ extension GeneratePackage {
 			}
 		}
 		
-		var binaryTargets: [ArrayElement] {
+		var binaryTargets: [ArrayElementSyntax] {
 			
 			
 			return []
@@ -111,23 +112,23 @@ extension GeneratePackage {
 	
 	
 	
-	fileprivate func handleTarget(_ target: inout FunctionCallExpr) async throws {
+	fileprivate func handleTarget(_ target: inout FunctionCallExprSyntax) async throws {
 		
 	}
 	
-	fileprivate func handlePackageTargets(_ targets: inout ArrayExpr) async throws {
+	fileprivate func handlePackageTargets(_ targets: inout ArrayExprSyntax) async throws {
 		//infoPrint("handlePackageTargets(_ targets: inout ArrayExpr)", indent: 2)
-		var output_targets: [ArrayElement] = []
-		var output_binaryTargets: [ArrayElement] = []
+		var output_targets: [ArrayElementSyntax] = []
+		var output_binaryTargets: [ArrayElementSyntax] = []
 		
 		var filteredTargets = targets.elements.filter { element in
-			if let target = element.expression.as(FunctionCallExpr.self) {
+			if let target = element.expression.as(FunctionCallExprSyntax.self) {
 				if TargetType(target: target) == .target { return true }
 			}
 			return false
 		}
 		var filteredBinaryTargets = targets.elements.filter { element  in
-			if let target = element.expression.as(FunctionCallExpr.self) {
+			if let target = element.expression.as(FunctionCallExprSyntax.self) {
 				if TargetType(target: target) == .binaryTarget { return true }
 			}
 			return false
@@ -135,7 +136,7 @@ extension GeneratePackage {
 		if filteredTargets.isEmpty {
 			filteredTargets.append(contentsOf: spec.targets.compactMap { specTarget in
 				if specTarget.custom_recipe { return nil }
-				return .init(expression: FunctionCallExpr(stringLiteral:
+				return .init(expression: FunctionCallExprSyntax(stringLiteral:
 				"""
 				.target(
 					name: "\(specTarget.name)",
@@ -150,7 +151,7 @@ extension GeneratePackage {
 			})
 		}
 		for var _target in filteredTargets {
-			guard var func_target = _target.expression.as(FunctionCallExpr.self) else { fatalError() }
+			guard var func_target = _target.expression.as(FunctionCallExprSyntax.self) else { fatalError() }
 			
 			let syntaxTarget = SyntaxTarget(name: "", spec: spec, src: func_target, version: version)
 			

@@ -41,8 +41,10 @@ public struct PackageBinaryTarget {
 	public var filename: String { path.lastComponentWithoutExtension }
 	public var file: String { path.lastComponent }
 	
-	var sha: String { (try? path.sha256()) ?? "" }
-	
+	public var sha: String { (try? path.sha256()) ?? "" }
+	public init(path: Path) {
+		self.path = path
+	}
 }
 
 

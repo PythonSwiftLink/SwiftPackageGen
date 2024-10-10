@@ -8,7 +8,7 @@
 import Foundation
 import ArgumentParser
 import PathKit
-import GeneratePackage
+//import GeneratePackage
 import Yams
 
 public struct RecipeBuilder {
@@ -38,7 +38,7 @@ public struct RecipeBuilder {
 		}
 		print("\n\n############################\n\n\t\tbuilding recipe\n\n############################")
 		//let packageSpec = try YAMLDecoder().decode( PackageSpec.self, from: spec.read() )
-		let version = "311.0.4"
+		//let version = "311.0.4"
 		
 		
 		if let recipe_path = path {
@@ -46,26 +46,26 @@ public struct RecipeBuilder {
 		} else {
 			try Toolchain.Build(recipe: recipe, optionalArgs: nil).run()
 		}
-		print("\n\n############################\n\n\t\tgenerating Package.swift\n\n############################")
-		let package = try await GeneratePackage(fromSwiftFile: nil, spec: spec, version: version)
-
-		
-		print("\n\n############################\n\n\t\trepacking recipe\n\n############################")
-		
-		let repack = RePackRecipe(recipe: recipe, packageString: package.swiftFile.description, source: .current, destination: .current + "packages/\(recipe)")
-		try await repack.repack()
-		
-		for target in package.spec.targets {
-			for dep in target.dependencies {
-				if let binary = dep as? PackageSpec.BinaryTarget {
-					for bt in binary.binaryTargets {
-						let dst = (repack.destination + bt.file)
-						try bt.path.forceCopy(dst)
-					}
-				}
-			}
-			
-		}
+//		print("\n\n############################\n\n\t\tgenerating Package.swift\n\n############################")
+//		let package = try await GeneratePackage(fromSwiftFile: nil, spec: spec, version: version)
+//
+//		
+//		print("\n\n############################\n\n\t\trepacking recipe\n\n############################")
+//		
+//		let repack = RePackRecipe(recipe: recipe, packageString: package.swiftFile.description, source: .current, destination: .current + "packages/\(recipe)")
+//		try await repack.repack()
+//		
+//		for target in package.spec.targets {
+//			for dep in target.dependencies {
+//				if let binary = dep as? PackageSpec.BinaryTarget {
+//					for bt in binary.binaryTargets {
+//						let dst = (repack.destination + bt.file)
+//						try bt.path.forceCopy(dst)
+//					}
+//				}
+//			}
+//			
+//		}
 		
 		
 	}

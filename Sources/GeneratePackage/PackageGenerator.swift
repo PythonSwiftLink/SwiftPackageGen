@@ -82,7 +82,7 @@ public class PackageGenerator: CustomStringConvertible {
 			let item = stmt.item
 			switch item.kind {
 			case .variableDecl:
-				if var variDecl = item.as(VariableDecl.self) {
+				if var variDecl = item.as(VariableDeclSyntax.self) {
 					try await handleVariableDecl(syntax: &variDecl)
 					output.append(.init(item: .decl(.init(variDecl))))
 				}
@@ -102,7 +102,7 @@ public class PackageGenerator: CustomStringConvertible {
 		SourceFile(statements: .init(output), eofToken: .eof).formatted().description
 	}
 	
-	func handleVariableDecl(syntax: inout VariableDecl) async throws {
+	func handleVariableDecl(syntax: inout VariableDeclSyntax) async throws {
 		//print("handleVariableDecl(syntax: VariableDecl):")
 		if var binding = syntax.bindings.first {
 			let pattern = binding.pattern
