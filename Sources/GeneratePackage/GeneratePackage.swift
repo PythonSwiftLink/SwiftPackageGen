@@ -23,11 +23,11 @@ targets: []
 }
 
 
-extension PathKit.Path: Decodable {
-	public init(from decoder: Decoder) throws {
-		self.init(try decoder.singleValueContainer().decode(String.self))
-	}
-}
+//extension PathKit.Path: Decodable {
+//	public init(from decoder: Decoder) throws {
+//		self.init(try decoder.singleValueContainer().decode(String.self))
+//	}
+//}
 extension PathKit.Path {
 	func createBinaryTargets() -> [PackageBinaryTarget] {
 		self
@@ -136,9 +136,10 @@ extension GeneratePackage {
 		if filteredTargets.isEmpty {
 			filteredTargets.append(contentsOf: spec.targets.compactMap { specTarget in
 				if specTarget.custom_recipe { return nil }
-				return .init(expression: FunctionCallExprSyntax(stringLiteral:
-				"""
-				.target(
+				//return .init(
+				return .init(
+					expression: ExprSyntax(stringLiteral: """
+					.target(
 					name: "\(specTarget.name)",
 					dependencies: [
 					],
@@ -146,9 +147,12 @@ extension GeneratePackage {
 					],
 					linkerSettings:[
 					]
-					)
-				""").withLeadingTrivia(.newline + .tab) ).withTrailingComma(.comma)
+					),
+					""").with(\.leadingTrivia, .newline + .tab)
+							 //.withLeadingTrivia(.newline + .tab) ).withTrailingComma(.comma)
+				)
 			})
+								   
 		}
 		for var _target in filteredTargets {
 			guard var func_target = _target.expression.as(FunctionCallExprSyntax.self) else { fatalError() }
@@ -217,14 +221,22 @@ extension GeneratePackage {
 //			}
 //			
 //		}
-		targets = .init(elements: .init(output_targets + output_binaryTargets)).withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))
+		targets = .init(elements: .init(itemsBuilder: {
+			for output_target in output_targets {
+				output_target
+			}
+			for output_binaryTarget in output_binaryTargets {
+				output_binaryTarget
+			}
+		}))
+		//targets = .init(elements: .init(output_targets + output_binaryTargets)).withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))
 	}
 	
-	fileprivate func handleLinkedSettings(_ settings: inout ArrayExpr) async throws {
+	fileprivate func handleLinkedSettings(_ settings: inout ArrayExprSyntax) async throws {
 		
 	}
 	
-	fileprivate func handlePackageDependencies(_ dependencies: inout ArrayExpr) async throws {
+	fileprivate func handlePackageDependencies(_ dependencies: inout ArrayExprSyntax) async throws {
 		print("\t\thandlePackageDependencies(_ dependencies: inout ArrayExpr):")
 		infoPrint("elements", dependencies.elements.map(\.expression.kind), indent: 3)
 		for pack in (spec.dependencies ?? []).compactMap({$0 as? PackageSpec.SwiftPackage}) {
@@ -240,53 +252,71 @@ extension GeneratePackage {
 					return ""
 				}
 			}
-			dependencies = dependencies.addElement(.init(expression: FunctionCallExpr(stringLiteral: packageString)).withLeadingTrivia(.newline + .tab))
+			dependencies.elements.append( .init(expression: ExprSyntax(stringLiteral: packageString)) )
+												   //.withLeadingTrivia(.newline + .tab))
 		}
-		dependencies.rightSquare = .rightSquareBracket.withLeadingTrivia(.newline)
+		//dependencies.rightSquare = .rightSquareBracket.withLeadingTrivia(.newline)
+		dependencies.rightSquare = .rightSquareToken(leadingTrivia: .newline)
 	}
-	fileprivate func handleProducts(_ products: inout ArrayExpr) async throws {
+	fileprivate func handleProducts(_ products: inout ArrayExprSyntax) async throws {
 		for product in spec.products {
 			switch product {
 			case .library(let name, let targets):
 				
-				products.elements = products.elements.appending(.init(
-					expression: FunctionCallExpr(stringLiteral: """
-					.library(
+				products.elements.append(.init(
+					leadingTrivia: .newline + .tab,
+					expression: ExprSyntax(stringLiteral: """
+						.library(
 						name: "\(name)",
 						targets: [
-							\(targets.map({"\"\($0)\""}).joined(separator: ",\n"))
+						\(targets.map({"\"\($0)\""}).joined(separator: ",\n"))
 						]
-					)
-					"""
-					).withLeadingTrivia(.newline + .tab).withRightParen(.rightParen.withLeadingTrivia(.newline + .tab))).withTrailingComma(.comma))
+						)
+						"""),
+					trailingComma: .commaToken(trailingTrivia: .newline)
+					
+				)
+				)
+				//.withLeadingTrivia(.newline + .tab).withRightParen(.rightParen.withLeadingTrivia(.newline + .tab))).withTrailingComma(.comma))
 			}
 		}
 	}
 	
-	fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExpr) async throws {
-		let args: [TupleExprElement] = try await syntax.argumentList.asyncMap { arg in
+	fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExprSyntax) async throws {
+		let args: [LabeledExprSyntax] = try await syntax.arguments.asyncMap { arg in
 			if let arg_name = arg.label?.text, let arg_case = PackageArgNames(rawValue: arg_name) {
 				switch arg_case {
 				case .name:
 					return arg
 				case .products:
-					if var products = arg.expression.as(ArrayExpr.self) {
+					if var products = arg.expression.as(ArrayExprSyntax.self) {
 						if products.elements.count == 0 {
 							try await handleProducts(&products)
 						}
-						return arg.withExpression(.init(products.withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))))
+						arg.with(\.expression, .init(
+							products.with(\.rightSquare, .rightSquareToken(leadingTrivia: .newline)))
+						)
+						//return arg.withExpression(.init(products.withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))))
 					}
 					
 					return arg
 				case .dependencies:
-					if var dependencies = arg.expression.as(ArrayExpr.self) {
+					if var dependencies = arg.expression.as(ArrayExprSyntax.self) {
 						try await handlePackageDependencies(&dependencies)
-						return .init(label: arg_name, expression: .init(dependencies)).withTrailingComma(.comma).withLeadingTrivia(.newline)
+						return .init(
+							label: arg_name,
+							expression: dependencies
+						)
+						//return .init(label: arg_name, expression: .init(dependencies)).withTrailingComma(.comma).withLeadingTrivia(.newline)
 					}
 				case .targets:
-					if var targets = arg.expression.as(ArrayExpr.self) {
+					if var targets = arg.expression.as(ArrayExprSyntax.self) {
 						try await handlePackageTargets(&targets)
-						return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
+						return .init(
+							label: arg_name,
+							expression: targets
+						)
+						//return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
 					}
 				
 				}
@@ -296,16 +326,16 @@ extension GeneratePackage {
 		syntax.argumentList = .init(args)
 	}
 	
-	fileprivate func readVariableDecl(syntax: inout VariableDecl) async throws {
+	fileprivate func readVariableDecl(syntax: inout VariableDeclSyntax) async throws {
 		//print("handleVariableDecl(syntax: VariableDecl):")
 		if var binding = syntax.bindings.first {
 			let pattern = binding.pattern
 			print("\t\(pattern.kind) - \(pattern)")
-			if let identifierPattern = pattern.as(IdentifierPattern.self) {
+			if let identifierPattern = pattern.as(IdentifierPatternSyntax.self) {
 				let identifier = identifierPattern.identifier.text
 				switch identifier {
 				case "package":
-					if var packageValue = binding.initializer?.value.as(FunctionCallExpr.self) {
+					if var packageValue = binding.initializer?.value.as(FunctionCallExprSyntax.self) {
 						try await readPackageFunctionCall(syntax: &packageValue)
 						binding.initializer?.value = .init(packageValue)
 					}
@@ -335,7 +365,7 @@ public class GeneratePackage {
 			let item = stmt.item
 			switch item.kind {
 			case .variableDecl:
-				if var variDecl = item.as(VariableDecl.self) {
+				if var variDecl = item.as(VariableDeclSyntax.self) {
 					try await readVariableDecl(syntax: &variDecl)
 					return .init(item: .decl(.init(variDecl)))
 					
@@ -372,29 +402,29 @@ public class UpdateBinaryTargets {
 		self.xcframeworks = xcframeworks
 		self.owner = owmer
 		self.repo = repo
-		let _new: [CodeBlockItem] = try await swiftFile.statements.asyncMap { stmt in
+		let _new: [CodeBlockItemSyntax] = try await swiftFile.statements.asyncMap { stmt in
 			let item = stmt.item
 			switch item.kind {
 			case .variableDecl:
-				guard var variDecl = item.as(VariableDecl.self) else { fatalError() }
+				guard var variDecl = item.as(VariableDeclSyntax.self) else { fatalError() }
 				try await modifyPackage(&variDecl)
 				return .init(item: .decl(.init(variDecl)))
 			default:
 				return stmt
 			}
 		}
-		modifiedFile = SourceFile(statements: .init(_new), eofToken: .eof)
+		modifiedFile = SourceFileSyntax(statements: .init(_new), endOfFileToken: .endOfFileToken() )
 	}
 	
-	func modifyPackage(_ syntax: inout VariableDecl)async throws {
+	func modifyPackage(_ syntax: inout VariableDeclSyntax)async throws {
 		if var binding = syntax.bindings.first {
 			let pattern = binding.pattern
 			print("\t\(pattern.kind) - \(pattern)")
-			if let identifierPattern = pattern.as(IdentifierPattern.self) {
+			if let identifierPattern = pattern.as(IdentifierPatternSyntax.self) {
 				let identifier = identifierPattern.identifier.text
 				switch identifier {
 				case "package":
-					if var packageValue = binding.initializer?.value.as(FunctionCallExpr.self) {
+					if var packageValue = binding.initializer?.value.as(FunctionCallExprSyntax.self) {
 						try await readPackageFunctionCall(syntax: &packageValue)
 						binding.initializer?.value = .init(packageValue)
 					}
@@ -408,13 +438,13 @@ public class UpdateBinaryTargets {
 		}
 	}
 	
-	fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExpr) async throws {
-		let args: [TupleExprElement] = try await syntax.argumentList.asyncMap { arg in
+	fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExprSyntax) async throws {
+		let args: [LabeledExprSyntax] = try await syntax.arguments.asyncMap { arg in
 			if let arg_name = arg.label?.text, let arg_case = PackageArgNames(rawValue: arg_name) {
 				switch arg_case {
 				
 				case .targets:
-					if var targets = arg.expression.as(ArrayExpr.self) {
+					if var targets = arg.expression.as(ArrayExprSyntax.self) {
 						//try await handlePackageTargets(&targets)
 						try await targets.updateTargets(
 							binaries: xcframeworks,
@@ -422,7 +452,11 @@ public class UpdateBinaryTargets {
 							owner: owner,
 							repo: repo
 						)
-						return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
+						//return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
+						return .init(
+							label: arg_name,
+							expression: targets
+						).with(\.leadingTrivia, .newline)
 					}
 				default: return arg
 				}
@@ -430,7 +464,7 @@ public class UpdateBinaryTargets {
 			}
 			return arg
 		}
-		syntax.argumentList = .init(args)
+		syntax.arguments = .init(args)
 	}
 	
 	public var description: String {
@@ -440,13 +474,11 @@ public class UpdateBinaryTargets {
 	}
 }
 
-extension ArrayExpr {
+extension ArrayExprSyntax {
 	mutating func updateTargets(binaries: Path, version: String, owner: String, repo: String) async throws {
-		
-		elements = .init(try await elements.asyncMap {
-			element in
+		let updated_elements = try await elements.asyncMap { element in
 			guard
-				var target = element.expression.as(FunctionCallExpr.self),
+				var target = element.expression.as(FunctionCallExprSyntax.self),
 				TargetType(target: target) == .binaryTarget
 			else { return element }
 			try await target.updateBinaryTarget(
@@ -455,30 +487,47 @@ extension ArrayExpr {
 				owner: owner,
 				repo: repo
 			)
+			return element.with(\.expression, .init(target))
 			
-			return element.withExpression(.init(target))
-		})
+		}
+		elements = .init(updated_elements)
+//		elements = .init(expressions: try await elements.asyncMap {
+//			element in
+//			guard
+//				var target = element.expression.as(FunctionCallExprSyntax.self),
+//				TargetType(target: target) == .binaryTarget
+//			else { return element.expression }
+//			try await target.updateBinaryTarget(
+//				binaries: binaries,
+//				version: version,
+//				owner: owner,
+//				repo: repo
+//			)
+//			return .init(target)
+//			//return element.withExpression(.init(target))
+//			//element.with(\.expression, target)
+//		})
 	}
 }
 
-extension FunctionCallExpr {
+extension FunctionCallExprSyntax {
 	mutating func updateBinaryTarget(binaries: Path, version: String, owner: String, repo: String) async throws {
 		print(self.calledExpression.description)
-		guard let name = argumentList.first?.expression.as(StringLiteralExpr.self)?.segments.first?.description else { fatalError() }
+		guard let name = arguments.first?.expression.as(StringLiteralExprSyntax.self)?.segments.first?.description else { fatalError() }
 		let binaryFiles = try binaries.children()
 		print(name, binaryFiles.map(\.lastComponentWithoutExtension).contains(name))
 		guard let binary = binaryFiles.first(where: {$0.lastComponentWithoutExtension == name}) else { fatalError() }
-		argumentList = .init(
-			try argumentList.map({
+		arguments = .init(
+			try arguments.map({
 				arg in
 				switch arg.label?.description {
 				case "url":
-					return arg.withExpression(
+					return arg.with(\.expression,
 						.init(StringLiteralExprSyntax(content:  "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(binary.lastComponent)"))
 					)
 				case "checksum":
-					return arg.withExpression(
-						.init("\(literal: try binary.sha256())")
+					return arg.with(\.expression,
+						"\(literal: try binary.sha256())"
 					)
 				default: return arg
 				}

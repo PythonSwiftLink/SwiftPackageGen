@@ -20,15 +20,15 @@ extension SwiftPackageGen {
 		@Argument var owner: String
 		@Argument var repo: String
 		@Option var output: Path?
+		@Option var spec: Path?
 		
 		func run() async throws {
 			print("running command")
 			let package = try UpdatePackage(
 				swiftFile: file,
 				xcframeworks: xcframework,
-				version: version,
-				owner: owner,
-				repo: repo
+				info: .init(version: version, owner: owner, repo: repo),
+				spec: spec
 			)
 			try await package.modifyPackage()
 			let new = package

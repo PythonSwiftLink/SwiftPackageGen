@@ -26,6 +26,18 @@ enum TargetArgNames: String {
 	case linkerSettings
 }
 
+public struct PackageReleaseInfo {
+	public let version: String
+	public let owner: String
+	public let repo: String
+	
+	public init(version: String, owner: String, repo: String) {
+		self.version = version
+		self.owner = owner
+		self.repo = repo
+	}
+}
+
 extension Sequence {
 	func asyncMap<T>(
 		_ transform: (Element) async throws -> T
@@ -44,9 +56,11 @@ extension Sequence {
 public protocol SwiftPackage: AnyObject {
 	var swiftFile: SourceFileSyntax { get }
 	var xcframeworks: Path { get }
-	var version: String { get }
-	var owner: String { get }
-	var repo: String { get }
+//	var version: String { get }
+//	var owner: String { get }
+//	var repo: String { get }
+	var release_info: PackageReleaseInfo { get }
+	var spec: SwiftPackageSpec? { get }
 	var modifiedFile: SourceFileSyntax { get set }
 	
 	//var binaryTargets: []
@@ -67,15 +81,36 @@ public extension SwiftPackage {
 	func updateBinaryTargets(_ targets: inout ArrayExprSyntax) async throws {
 		try await targets.updateBinaryTargets(
 			binaries: xcframeworks,
-			version: version,
-			owner: owner,
-			repo: repo
+			version: release_info.version,
+			owner: release_info.owner,
+			repo: release_info.repo
 		)
 	}
 	
 }
 
 extension ArrayExprSyntax {
+	
+	mutating func updateBinaryTargets(spec: SwiftPackageSpec, info: PackageReleaseInfo ) async throws {
+		let binary_files = spec.binaryTargets.reduce(into: [SwiftPackageSpec.BinaryFile]()) { partialResult, target in
+			partialResult.append(contentsOf: target.files)
+		}
+		elements = .init(try await elements.asyncMap { element in
+			guard
+				var target = element.expression.as(FunctionCallExprSyntax.self),
+				TargetType(target: target) == .binaryTarget
+			else { return element }
+//			try await target.updateBinaryTarget(
+//				binaries: binary_files,
+//				version: info.version,
+//				owner: info.owner,
+//				repo: info.repo
+//			)
+			try await target.updateBinaryTarget(binaries: binary_files, info: info)
+			return element.with(\.expression, .init(target))
+		})
+	}
+	
 	mutating func updateBinaryTargets(binaries: Path, version: String, owner: String, repo: String) async throws {
 		elements =  .init(try await elements.asyncMap {
 			element in
@@ -98,6 +133,32 @@ extension ArrayExprSyntax {
 }
 
 extension FunctionCallExprSyntax {
+	mutating func updateBinaryTarget(binaries: [SwiftPackageSpec.BinaryFile], info: PackageReleaseInfo) async throws {
+		guard let name = arguments.first?.expression.as(StringLiteralExprSyntax.self)?.segments.first?.description else { fatalError() }
+		guard let binary = binaries.first(where: {$0.name == name}) else { fatalError() }
+		arguments = .init(
+			arguments.map({
+				arg in
+				switch arg.label?.description {
+				case "url":
+					return arg.with(\.expression, .init(StringLiteralExprSyntax(content:  "https://github.com/\(info.owner)/\(info.repo)/releases/download/\(info.version)/\(binary.name)"))
+					)
+					//					return arg.withExpression(
+					//						.init(StringLiteralExprSyntax(content:  "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(binary.lastComponent)"))
+					//					)
+				case "checksum":
+					return arg.with(\.expression, .init(literal: binary.sha256))
+				default: return arg
+				}
+				
+			})
+		)
+	}
+	
+	fileprivate mutating func updateBinary(bin: SwiftPackageSpec.BinaryFile, info: PackageReleaseInfo) async throws {
+		
+	}
+	
 	mutating func updateBinaryTarget(binaries: Path, version: String, owner: String, repo: String) async throws {
 		print(self.calledExpression.description)
 		guard let name = arguments.first?.expression.as(StringLiteralExprSyntax.self)?.segments.first?.description else { fatalError() }
@@ -191,7 +252,11 @@ public extension SwiftPackage {
 					
 				case .targets:
 					if var targets = arg.expression.as(ArrayExprSyntax.self) {
-						try await updateBinaryTargets(&targets)
+						if let spec = spec {
+							try await targets.updateBinaryTargets(spec: spec, info: release_info)
+						} else {
+							try await updateBinaryTargets(&targets)
+						}
 						//return .init(label: arg_name, expression: .init(targets)).with(\.trailingTrivia, .newline )
 						return .init(
 							label: arg_name,

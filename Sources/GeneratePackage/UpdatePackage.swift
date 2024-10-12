@@ -8,10 +8,3 @@
 import Foundation
 import SwiftPackage
 
-
-public class UpdatePackage: SwiftPackage {
-	
-	init() {
-		
-	}
-}

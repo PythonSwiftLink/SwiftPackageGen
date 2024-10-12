@@ -35,7 +35,8 @@ let package = Package(
 				.product(name: "Yams", package: "Yams"),
 				.product(name: "SwiftPrettyPrint", package: "SwiftPrettyPrint"),
 				"RecipeBuilder",
-				"SwiftPackage"
+				"SwiftPackage",
+				"GeneratePackage"
             ]
         ),
 		.target(
@@ -55,12 +56,12 @@ let package = Package(
 				.product(name: "PathKit", package: "PathKit"),
 			]
 		),
-//		.target(name: "GeneratePackage", dependencies: [
-//			.product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
-//			.product(name: "SwiftSyntax", package: "swift-syntax"),
-//			.product(name: "PathKit", package: "PathKit"),
-//			"SwiftPackage",
-//		]),
+		.target(name: "GeneratePackage", dependencies: [
+			.product(name: "SwiftSyntaxBuilder", package: "swift-syntax"),
+			.product(name: "SwiftSyntax", package: "swift-syntax"),
+			.product(name: "PathKit", package: "PathKit"),
+			"SwiftPackage",
+		]),
 		
     ]
 )

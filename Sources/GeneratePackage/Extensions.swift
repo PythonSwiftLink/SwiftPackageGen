@@ -9,6 +9,7 @@ import Foundation
 import SwiftSyntax
 import SwiftSyntaxBuilder
 import PathKit
+import SwiftPackage
 
 extension PackageSpecDependency {
 	func binaryTarget(owner: String, repo: String, version: String) -> ArrayElementSyntax? {
@@ -23,19 +24,26 @@ extension PackageSpecDependency {
 extension PackageBinaryTarget {
 	
 	func binaryTarget(owner: String, repo: String, version: String) -> ArrayElementSyntax {
-		let call = FunctionCallExprSyntax(stringLiteral: """
+//		let call = FunctionCallExprSyntax(stringLiteral: """
+//		.binaryTarget(name: "\(filename)", url: "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(file)", checksum: "\(sha)")
+//		""")
+		let call = ExprSyntax(stringLiteral: """
 		.binaryTarget(name: "\(filename)", url: "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(file)", checksum: "\(sha)")
 		""")
-		
-		return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
+		//return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
+		return .init(leadingTrivia: .newline + .tab, expression: call, trailingComma: .commaToken())
 	}
 	func binaryTarget(name: String, path: String) -> ArrayElementSyntax {
 		let local = Path(path).lastComponent
-		let call = FunctionCallExprSyntax(stringLiteral: """
+//		let call = FunctionCallExprSyntax(stringLiteral: """
+//		.binaryTarget(name: "\(name)", path: "\(local)")
+//		""")
+//		
+//		return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
+		let call = ExprSyntax(stringLiteral: """
 		.binaryTarget(name: "\(name)", path: "\(local)")
 		""")
-		
-		return .init(expression: call).withLeadingTrivia(.newline + .tab).withTrailingComma(.comma)
+		return .init(leadingTrivia: .newline + .tab, expression: call, trailingComma: .commaToken())
 	}
 }
 
@@ -50,9 +58,11 @@ extension PackageSpec.LinkerSetting {
 		}
 	}
 	
-	func setting() -> ArrayElement {
-		let call = FunctionCallExpr(stringLiteral: string() )
-		return .init(expression: call).withLeadingTrivia(.newline + .tabs(2))
+	func setting() -> ArrayElementSyntax {
+		//let call = FunctionCallExpr(stringLiteral: string() )
+		let call = ExprSyntax(stringLiteral: string() )
+		//return .init(expression: call).withLeadingTrivia(.newline + .tabs(2))
+		return .init(leadingTrivia: .newline + .tabs(2), expression: call)
 	}
 }
 

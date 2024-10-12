@@ -3,7 +3,7 @@ import ArgumentParser
 import SwiftPrettyPrint
 import PathKit
 import RecipeBuilder
-//import GeneratePackage
+import GeneratePackage
 import SwiftPackage
 
 extension PathKit.Path: ExpressibleByArgument {
@@ -20,6 +20,7 @@ struct SwiftPackageGen: AsyncParsableCommand {
 		version: "0.0.5",
 		subcommands: [
 			Builder.self,
+			
 			Update.self
 		]
 	)

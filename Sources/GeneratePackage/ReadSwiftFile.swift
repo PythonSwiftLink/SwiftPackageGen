@@ -12,17 +12,17 @@ import SwiftSyntaxBuilder
 import PathKit
 
 
-fileprivate func handlePackageTargets(_ targets: inout ArrayExpr) async throws {
-	infoPrint("handlePackageTargets(_ targets: inout ArrayExpr)", indent: 2)
+fileprivate func handlePackageTargets(_ targets: inout ArrayExprSyntax) async throws {
+	infoPrint("handlePackageTargets(_ targets: inout ArrayExprSyntax)", indent: 2)
 	var output_targets: [ArrayElementSyntax] = []
 	var output_binaryTargets: [ArrayElementSyntax] = []
 	
 	for _target in targets.elements {
 		infoPrint("_target", _target.expression.kind, indent: 3)
 		infoPrint("_target.expression", _target.expression.kind, indent: 4)
-		if var target = _target.expression.as(FunctionCallExpr.self) {
+		if var target = _target.expression.as(FunctionCallExprSyntax.self) {
 			infoPrint("target.calledExpression.kind", target.calledExpression.kind, indent: 4)
-			if var memberAccessExpr = target.calledExpression.as(MemberAccessExpr.self) {
+			if var memberAccessExpr = target.calledExpression.as(MemberAccessExprSyntax.self) {
 				if let target_type = TargetType(rawValue: memberAccessExpr.name.text) {
 					infoPrint("target type", target_type, indent: 4)
 					switch target_type {
@@ -46,17 +46,22 @@ fileprivate func handlePackageTargets(_ targets: inout ArrayExpr) async throws {
 //			.binaryTarget(owner: owner, repo: repo, version: version, file_name: k, sha: v).withTrailingComma(.comma)
 //		)
 //	}
-	targets = .init(elements: .init(output_targets + output_binaryTargets)).withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))
+	//targets = .init(elements: .init(output_targets + output_binaryTargets)).withRightSquare(.rightSquareBracket.withLeadingTrivia(.newline))
+	targets = .init(
+		leadingTrivia: .newline,
+		elements: .init((output_targets + output_binaryTargets))
+	)
 }
 
-fileprivate func handlePackageDependencies(_ dependencies: inout ArrayExpr) async throws {
-	print("\t\thandlePackageDependencies(_ dependencies: inout ArrayExpr):")
+fileprivate func handlePackageDependencies(_ dependencies: inout ArrayExprSyntax) async throws {
+	print("\t\thandlePackageDependencies(_ dependencies: inout ArrayExprSyntax):")
 	infoPrint("elements", dependencies.elements.map(\.expression.kind), indent: 3)
-	dependencies.rightSquare = .rightSquareBracket.withLeadingTrivia(.newline)
+	//dependencies.rightSquare = .rightSquareBracket.withLeadingTrivia(.newline)
+	dependencies.rightSquare = .rightSquareToken(leadingTrivia: .newline)
 }
 
-fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExpr) async throws {
-	var args: [TupleExprElement] = try await syntax.argumentList.asyncMap { arg in
+fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExprSyntax) async throws {
+	var args: [LabeledExprSyntax] = try await syntax.arguments.asyncMap { arg in
 		if let arg_name = arg.label?.text, let arg_case = PackageArgs(rawValue: arg_name) {
 			switch arg_case {
 			case .name:
@@ -64,14 +69,22 @@ fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExpr) async t
 			case .products:
 				return arg
 			case .dependencies:
-				if var dependencies = arg.expression.as(ArrayExpr.self) {
+				if var dependencies = arg.expression.as(ArrayExprSyntax.self) {
 					try await handlePackageDependencies(&dependencies)
-					return .init(label: arg_name, expression: .init(dependencies)).withTrailingComma(.comma).withLeadingTrivia(.newline)
+					//return .init(label: arg_name, expression: .init(dependencies)).withTrailingComma(.comma).withLeadingTrivia(.newline)
+					return .init(
+						label: arg_name,
+						expression: dependencies
+					).with(\.trailingComma, .commaToken()).with(\.leadingTrivia, .newline)
 				}
 			case .targets:
-				if var targets = arg.expression.as(ArrayExpr.self) {
+				if var targets = arg.expression.as(ArrayExprSyntax.self) {
 					//try await handlePackageTargets(&targets)
-					return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
+					//return .init(label: arg_name, expression: .init(targets)).withLeadingTrivia(.newline )
+					return .init(
+						label: arg_name,
+						expression: targets
+					).with(\.trailingComma, .commaToken()).with(\.leadingTrivia, .newline)
 				}
 			}
 		}
@@ -80,16 +93,16 @@ fileprivate func readPackageFunctionCall(syntax: inout FunctionCallExpr) async t
 	syntax.argumentList = .init(args)
 }
 
-fileprivate func readVariableDecl(syntax: inout VariableDecl) async throws {
-	print("handleVariableDecl(syntax: VariableDecl):")
+fileprivate func readVariableDeclSyntax(syntax: inout VariableDeclSyntax) async throws {
+	print("handleVariableDeclSyntax(syntax: VariableDeclSyntax):")
 	if var binding = syntax.bindings.first {
 		let pattern = binding.pattern
 		print("\t\(pattern.kind) - \(pattern)")
-		if let identifierPattern = pattern.as(IdentifierPattern.self) {
-			let identifier = identifierPattern.identifier.text
+		if let IdentifierPatternSyntax = pattern.as(IdentifierPatternSyntax.self) {
+			let identifier = IdentifierPatternSyntax.identifier.text
 			switch identifier {
 			case "package":
-				if var packageValue = binding.initializer?.value.as(FunctionCallExpr.self) {
+				if var packageValue = binding.initializer?.value.as(FunctionCallExprSyntax.self) {
 					try await readPackageFunctionCall(syntax: &packageValue)
 					binding.initializer?.value = .init(packageValue)
 				}
@@ -127,9 +140,9 @@ public class ReadSwiftFile: CustomStringConvertible {
 //		output = try await parse.statements.asyncMap { stmt in
 //			let item = stmt.item
 //			switch item.kind {
-//			case .variableDecl:
-//				if var variDecl = item.as(VariableDecl.self) {
-//					try await readVariableDecl(syntax: &variDecl)
+//			case .VariableDeclSyntax:
+//				if var variDecl = item.as(VariableDeclSyntax.self) {
+//					try await readVariableDeclSyntax(syntax: &variDecl)
 //					return .init(item: .decl(.init(variDecl)))
 //					
 //				}
@@ -145,7 +158,7 @@ public class ReadSwiftFile: CustomStringConvertible {
 	
 	public var description: String {
 		var code = ""
-		SourceFile(statements: .init(output), eofToken: .eof).formatted().write(to: &code)
+		SourceFileSyntax(statements: .init(output), endOfFileToken: .endOfFileToken()).formatted().write(to: &code)
 		return code
 	}
 }
