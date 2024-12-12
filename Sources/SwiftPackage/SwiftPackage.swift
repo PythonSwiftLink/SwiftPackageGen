@@ -141,7 +141,7 @@ extension FunctionCallExprSyntax {
 				arg in
 				switch arg.label?.description {
 				case "url":
-					return arg.with(\.expression, .init(StringLiteralExprSyntax(content:  "https://github.com/\(info.owner)/\(info.repo)/releases/download/\(info.version)/\(binary.name)"))
+					return arg.with(\.expression, .init(StringLiteralExprSyntax(content:  "https://github.com/\(info.owner)/\(info.repo)/releases/download/\(info.version)/\(binary.name).zip"))
 					)
 					//					return arg.withExpression(
 					//						.init(StringLiteralExprSyntax(content:  "https://github.com/\(owner)/\(repo)/releases/download/\(version)/\(binary.lastComponent)"))
